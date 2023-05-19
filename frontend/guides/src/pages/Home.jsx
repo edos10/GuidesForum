@@ -34,7 +34,7 @@ const Home = () => {
                     {guides.map((guide, index) => (
                         <div className="guide-card" key={index}>
                             <div className="guide-header">
-                                <h2>{guide.title}</h2>
+                                <h2><a href={`/guide/${guide.id}`} className="guide-link">{guide.title}</a></h2>
                                 <p>{guide.author} - {guide.releaseDate} - {guide.views}</p>
                             </div>
                             <div className="guide-body">

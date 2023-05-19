@@ -12,6 +12,11 @@
     justify-content: space-between;
 }
 
+.guide-link {
+    text-decoration:dotted;
+    color:darkslategray;
+}
+
 .guide-card {
     width: calc(50% - 20px);
     margin-bottom: 20px;

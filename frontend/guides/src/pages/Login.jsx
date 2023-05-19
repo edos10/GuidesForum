@@ -17,8 +17,10 @@ export default function LoginPage() {
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("username", username);
                 setRedirect(true);
+            } else if (response.status === 401) {
+                alert(response.data.message)
             } else {
-                alert("Неверные данные!")
+                alert("Ошибка ответа сервера, попробуйте позже.")
             }
         } catch (error) {
             console.log("Error: ", error);

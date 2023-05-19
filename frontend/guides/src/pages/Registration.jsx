@@ -33,13 +33,13 @@ const Register = () => {
                 localStorage.setItem("username", username);
                 reset()
                 navigate("/");
-            } else if (response.status === 201) {
-                alert("Пользователь уже существует!")
+            } else if (response.status === 401) {
+                alert(response.data.message)
             } else {
             }
         } catch (error) {
             console.log("Error: ", error);
-            alert("Wrong credentials");
+            alert(error.response.data.message);
         }
     }
 

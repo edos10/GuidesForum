@@ -1,0 +1,36 @@
+.my-profile {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .user-info {
+    flex: 1;
+  }
+  
+  .guides-list {
+    flex: 1;
+  }
+  
+  .guides-list h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  .guides-list ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .guides-list li {
+    margin-bottom: 5px;
+  }
+  
+  .guide-link {
+    text-decoration: none;
+    color: #333;
+  }
+  
+  .guide-link:hover {
+    text-decoration: underline;
+  }
+  

@@ -5,18 +5,18 @@
       <ServerVersion>15.2</ServerVersion>
       <StartupTime>1684146781</StartupTime>
     </root>
-    <database id="2" parent="1" name="guides_data">
-      <ObjectId>16419</ObjectId>
-      <OwnerName>postgres</OwnerName>
-    </database>
-    <database id="3" parent="1" name="postgres">
+    <database id="2" parent="1" name="postgres">
       <Comment>default administrative connection database</Comment>
       <Current>1</Current>
       <ObjectId>5</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
-    <database id="4" parent="1" name="test">
+    <database id="3" parent="1" name="test">
       <ObjectId>16398</ObjectId>
+      <OwnerName>postgres</OwnerName>
+    </database>
+    <database id="4" parent="1" name="guides_data">
+      <ObjectId>16419</ObjectId>
       <OwnerName>postgres</OwnerName>
     </database>
     <schema id="5" parent="2" name="information_schema">

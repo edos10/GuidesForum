@@ -13,7 +13,7 @@ import "./style.scss"
 import GuidePage from "./pages/GuidePage";
 import EditGuide from "./pages/EditGuide.jsx";
 
-const BASE_URL = "http://localhost:5000/api/auth/login";
+const BASE_URL = "http://localhost:5000/api";
 
 const Layout = () => {
   return (
