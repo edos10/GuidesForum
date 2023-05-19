@@ -1,0 +1,49 @@
+.auth {
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+    flex-direction: column;
+    background-color:deepskyblue;
+
+    h1 {
+        font-size: 40px;
+        color: black;
+        margin-bottom: 10px;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        padding: 50px;
+        border-radius: 15px;
+        background-color: white;
+        width: 250px;
+        gap: 40px;
+
+        input {
+            padding: 10px;
+            border:0dvb;
+            border-bottom: 1px solid gray;
+        }
+
+        p {
+            font-size: 12px;
+            color: red;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px;
+            border: None;
+            background-color:chartreuse;
+            cursor: pointer;
+            color: black;
+        }
+        
+        span {
+            font-size: 12px;
+            text-align: center;
+        }
+    }
+}

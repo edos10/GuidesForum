@@ -1,0 +1,12 @@
+.app {
+  display: flex;
+  justify-content: center;
+  background-color: white;
+  .container {
+    width: 2048px;
+    .link {
+      text-decoration: none;
+      color: inherit;
+    }
+  }
+}

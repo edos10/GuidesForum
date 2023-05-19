@@ -1,0 +1,122 @@
+.add {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .content {
+        flex-grow: 1;
+        margin-right: 20px;
+
+        input[type="text"] {
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+            width: 100%;
+
+            &:focus {
+                outline: none;
+            }
+        }
+
+        .editorContainer {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+
+            .ql-editor {
+                font-size: 16px;
+                min-height: 300px;
+                padding: 0;
+                margin: 0;
+                overflow-y: auto;
+                white-space: normal;
+
+                &:focus {
+                    outline: none;
+                }
+            }
+        }
+    }
+
+    .menu {
+        flex-grow: 0;
+        width: 300px;
+
+        .item {
+            margin-bottom: 20px;
+
+            h1 {
+                font-size: 24px;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+
+            .buttons {
+                margin-top: 20px;
+
+                button {
+                    background-color: #6b9dc2;
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    padding: 10px 20px;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: #4a7ea9;
+                    }
+                }
+            }
+
+            .tags {
+                display: flex;
+                flex-wrap: wrap;
+
+                .tag {
+                    background-color: #f2f2f2;
+                    color: #333;
+                    border-radius: 5px;
+                    padding: 5px 10px;
+                    margin-right: 10px;
+                    margin-bottom: 10px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: center;
+
+                    button {
+                        background-color: transparent;
+                        border: none;
+                        color: #999;
+                        font-weight: bold;
+                        font-size: 20px;
+                        margin-left: 5px;
+                        cursor: pointer;
+
+                        &:hover {
+                            color: #333;
+                        }
+                    }
+                }
+
+                input[type="text"] {
+                    font-size: 16px;
+                    border: none;
+                    border-bottom: 2px solid #ddd;
+                    margin-bottom: 10px;
+                    padding: 5px 10px;
+                    width: 100%;
+
+                    &:focus {
+                        outline: none;
+                    }
+                }
+            }
+        }
+    }
+}
