@@ -16,7 +16,7 @@ new_redis = redis.StrictRedis(
 
 
 def new_user(token: str, data: str):
-    new_redis.set(token, data, 40)
+    new_redis.set(token, data, SESSION_DURATION)
     print(new_redis.get(token))
     pass
 

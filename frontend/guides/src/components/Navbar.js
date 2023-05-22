@@ -33,6 +33,8 @@ const Navbar = () => {
                 if (response.data.isAuth) {
                     setIsAuth(true);
                 } else {
+                    localStorage.removeItem("token");
+                    localStorage.removeItem("username");
                     console.log(response);
                 }
             } catch (error) {

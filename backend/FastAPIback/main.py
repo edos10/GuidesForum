@@ -13,10 +13,9 @@ from check_auth import router_for_check
 app = FastAPI()
 app.include_router(router_auth)
 app.include_router(router_for_check)
-origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins="*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,7 +26,7 @@ app.add_middleware(
 @app.options("*")
 def handle_options():
     response = JSONResponse({}, status_code=200)
-    response.headers["Access-Control-Allow-Origin"] = origins[0]
+    response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control"] = '*'
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
@@ -184,5 +183,5 @@ if __name__ == "__main__":
         "main:app",
         host="localhost",
         port=5000,
-        workers=10
+        workers=1
     )
