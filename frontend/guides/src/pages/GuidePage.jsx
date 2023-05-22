@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import "./GuidePage.css"
+import { redirect, useLocation, useNavigate } from 'react-router-dom';
+import "./GuidePage.css";
 import axios from 'axios';
+import moment from "moment";
 
 const GuidePage = () => {
   const location = useLocation();
   const [commentsVisible, setCommentsVisible] = useState(false);
   const postId = location.pathname.split("/")[2];
   const [guideData, setGuideData] = useState(null);
+  const [comment, setComment] = useState('');
   useEffect(() => {
     const fetchData = async () => {
       const response = await axios.put(`http://localhost:5000/api/get_guide/${postId}`);
@@ -37,6 +39,17 @@ const GuidePage = () => {
   if (!guideData) {
     return <div>Loading...</div>;
   }
+  const sendComment = async () => {
+    const data = {
+      guideId: postId,
+      commentText: comment,
+      author: localStorage.getItem('username'),
+      date: moment(Date.now()).format("YYYY-MM-DD HH:MM"),
+    };
+    await axios.post('http://localhost:5000/api/send_comment', data);
+    setComment('');
+    redirect(`/guide/${postId}`);
+  };
 
   return (
     !guideData.message ?
@@ -66,8 +79,45 @@ const GuidePage = () => {
             ))}
           </div>
         )}
-      </div>
-      : <div>NULL</div>
+        {localStorage.getItem("username") && (
+  <div>
+  <textarea
+    value={comment}
+    onChange={(e) => setComment(e.target.value)}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendComment();
+      }
+      }}
+      placeholder="Введите комментарий"
+      style={{
+        padding: '10px',
+        border: '1px solid #ccc',
+        borderRadius: '4px',
+        fontSize: '16px',
+        width: '300px',
+        resize: 'vertical'
+      }}
+    />
+    <button
+      onClick={sendComment}
+      style={{
+        padding: '10px 20px',
+        backgroundColor: '#4CAF50',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '16px'
+      }}
+      >
+        Отправить
+      </button>
+    </div>
+    )}
+    </div>
+    : <div><h1>NULL, Server Error</h1></div>
   );
 };
 

@@ -1,9 +1,2 @@
-import pymorphy2
-
-
-def search(query: str):
-
-    pass
-
-
-query = "Как собраться в поход?"
+n = int(input())
+for i in range(n):

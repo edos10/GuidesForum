@@ -9,9 +9,10 @@ const MyProfile = () => {
   const [guides, setGuides] = useState([]);
 
   useEffect(() => {
+
     const fetchUser = async () => {
       try {
-        const res = await axios.get(BASE_URL + "/user");
+        const res = await axios.get(BASE_URL + "/");
         setUser(res.data);
       } catch (err) {
         console.log(err);
@@ -30,7 +31,6 @@ const MyProfile = () => {
     fetchUser();
     fetchGuides();
   }, []);
-
   return (
     <div className="my-profile">
       {user && (

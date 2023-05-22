@@ -26,6 +26,7 @@ export default function LoginPage() {
             console.log("Error: ", error);
             alert("Wrong credentials");
         }
+        window.location.reload("/");
     }
 
     if (redirect) {

@@ -8,30 +8,26 @@ from config import *
 from change_password import *
 import uvicorn
 from auth import *
+from check_auth import router_for_check
 
 app = FastAPI()
-app_copy = FastAPI()
+app.include_router(router_auth)
+app.include_router(router_for_check)
+origins = ["http://localhost:3000"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
-app.include_router(router_auth)
-app_copy.add_middleware(
-    CORSMiddleware,
-    allow_origins=['*'],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    expose_headers=["Access-Control-Allow-Origin"],
 )
 
 
 @app.options("*")
 def handle_options():
     response = JSONResponse({}, status_code=200)
-    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Origin"] = origins[0]
     response.headers["Access-Control"] = '*'
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
     response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
@@ -51,6 +47,7 @@ async def new_guide(request: Request):
     connection.commit()
     return JSONResponse(content={"message": "ok"}, status_code=200)
 
+
 @app.post('/api/profile/{id_guide}')
 async def profile_user(id_guide: int, request: Request):
     print(await request.json())
@@ -66,7 +63,6 @@ def to_up_views(guide_id: int):
 
 @app.get('/api/get_guide/{guide_id}')
 @app.put('/api/get_guide/{guide_id}')
-@app_copy.put('/api/get_guide/{guide_id}')
 async def get_guide(guide_id: int, request: Request):
     with connection.cursor() as cur:
         cur.execute("SELECT * FROM guides WHERE id = %s", (guide_id,))
@@ -137,13 +133,15 @@ def increase_rating(input_data: dict):
     return JSONResponse({}, status_code=200)
 
 
+"""without editing of tags"""
+
+
 @app.post('/api/edit_guide/{guide_id}')
 async def edit_guide(guide_id, request: Request):
     input_data = await request.json()
-    delete_tags = []
     with connection.cursor() as cur:
         cur.execute("")
-        cur.execute(f"UPDATE * ")
+        cur.execute(f"UPDATE guides SET title, descr")
     print(input_data)
 
 
@@ -171,11 +169,20 @@ async def search(request: Request):
     pass
 
 
+@app.post('/api/send_comment')
+async def send_comment(request: Request):
+    data = await request.json()
+    with connection.cursor() as cur:
+        cur.execute(f"INSERT into comments (text, author, date, guide) VALUES (%s, %s, %s, %s)",
+                    (data['commentText'], data['author'], data['date'], data['guideId']))
+    connection.commit()
+    print(data)
+
+
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="localhost",
         port=5000,
-        reload=True,
-        workers=100
+        workers=10
     )

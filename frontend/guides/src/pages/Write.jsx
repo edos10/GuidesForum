@@ -20,7 +20,7 @@ const GuideForm = () => {
                 title,
                 desc: value,
                 tags,
-                date: moment(Date.now()).format("YYYY-MM-DD HH:mm:ss"),
+                date: moment(Date.now()).format("YYYY-MM-DD"),
                 author: localStorage.getItem('username'),
             });
             console.log(response)
@@ -59,12 +59,6 @@ const GuideForm = () => {
             </div>
             <div className="menu">
                 <div className="item">
-                    <h1>Готово!</h1>
-                    <div className="buttons">
-                        <button onClick={handleClick}>Опубликовать</button>
-                    </div>
-                </div>
-                <div className="item">
                     <h1>Tags</h1>
                     <div className="tags">
                         {tags.map((tag) => (
@@ -83,8 +77,13 @@ const GuideForm = () => {
                                 e.target.value = "";
                             }
                         }}
-
                     />
+                </div>
+                <div className="item">
+                    <h1>Готово!</h1>
+                    <div className="buttons">
+                        <button onClick={handleClick}>Опубликовать</button>
+                    </div>
                 </div>
             </div>
         </div>

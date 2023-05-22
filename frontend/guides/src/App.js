@@ -12,6 +12,7 @@ import Navbar from "./components/Navbar.js";
 import "./style.scss"
 import GuidePage from "./pages/GuidePage";
 import EditGuide from "./pages/EditGuide.jsx";
+import MyProfile from "./pages/MyProfile.jsx";  
 
 const BASE_URL = "http://localhost:5000/api";
 
@@ -56,6 +57,10 @@ const router = createBrowserRouter([
       {
         path: "/edit_guide/:id",
         element: <EditGuide />
+      },
+      {
+        path: "/profile/:username",
+        element: <MyProfile />
       }
 ]}]);
 

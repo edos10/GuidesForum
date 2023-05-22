@@ -1,13 +1,17 @@
+import random
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
+from check_auth import new_user
 from change_password import hash_password, connection, check_password
-import jwt
-from config import *
-
+from string import ascii_letters, punctuation, digits
 
 router_auth = APIRouter()
 
 bad_auth = 401
+generate_token = list(ascii_letters + punctuation + digits)
+generate_token.remove("'")
+generate_token.remove('"')
+len_token = 40
 
 
 @router_auth.post('/api/auth/register')
@@ -26,8 +30,8 @@ async def register_user(request: Request):
     cur.execute("INSERT INTO users (username, hashsalt, email) VALUES (%s, %s, %s)",
                 (data['username'], bytes_password, data['email']))
     connection.commit()
-    token = jwt.encode(data, SECRET_KEY_FOR_TOKEN, algorithm="HS256")
-    print(jwt.decode(token, SECRET_KEY_FOR_TOKEN, algorithms=["HS256"]))
+    token = "".join([random.choice(generate_token) for _ in range(len_token)])
+    new_user(token, data['username'])
     return JSONResponse(content={"token": token}, status_code=200)
 
 
@@ -42,5 +46,6 @@ async def login_user(request: Request):
     true_pwd = find_user[1]
     if not check_password(true_pwd, input_data['password']):
         return JSONResponse(content={"message": "Неверный пароль, введите еще раз!"}, status_code=bad_auth)
-    token = jwt.encode(input_data, "test string")
+    token = "".join([random.choice(generate_token) for _ in range(len_token)])
+    new_user(token, input_data['username'])
     return JSONResponse(content={"token": token}, status_code=200)

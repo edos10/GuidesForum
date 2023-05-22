@@ -2,17 +2,17 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import BASE_URL from "../App";
+import axios from "axios";
 
 const Navbar = () => {
     const navigate = useNavigate();
     const [searchText, setSearchText] = useState("");
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    
+    const [isAuth, setIsAuth] = useState(false);
     function logout() {
         localStorage.removeItem("token", null);
         localStorage.removeItem("username", null);
         console.log("exit");
-        navigate("/");
+        window.location.reload();
     }
 
     function handleSearch(e) {
@@ -23,9 +23,26 @@ const Navbar = () => {
         }
     }
 
+    useEffect(() => {
+        async function checkAuthentication() {
+            try {
+                const response = await axios.post(`http://localhost:5000/api/check_auth`, {
+                    token: localStorage.getItem("token")
+                });
+
+                if (response.data.isAuth) {
+                    setIsAuth(true);
+                } else {
+                    console.log(response);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        checkAuthentication();
+    }, []);
     const userInfo = localStorage.getItem("username");
     const currentUser = userInfo;
-    const isRightToken = false;
 
     console.log("current name is", currentUser);
     return (
@@ -53,7 +70,7 @@ const Navbar = () => {
                         Случайный гайд
                     </Link>
                 </div>
-                {currentUser ? (
+                {isAuth ? (
                     <>
                         <div className="navbar-link-container">
                             <Link to="/create_guide" className="navbar-link">

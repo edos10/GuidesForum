@@ -15,3 +15,7 @@ VIEWS = 5
 SALT = os.urandom(32)
 
 SECRET_KEY_FOR_TOKEN = "test"
+
+HOST_FOR_REDIS = "127.0.0.1"
+PASSWORD_FOR_REDIS = "mypass"
+PORT_REDIS = 6379
