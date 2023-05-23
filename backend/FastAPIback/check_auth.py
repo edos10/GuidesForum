@@ -26,7 +26,7 @@ async def check_user(request: Request):
     data = await request.json()
     token = data['token']
     is_auth = False
-    if new_redis.get(token):
+    if token and new_redis.get(token):
         is_auth = True
     print(is_auth)
     return JSONResponse({"isAuth": is_auth}, status_code=200)

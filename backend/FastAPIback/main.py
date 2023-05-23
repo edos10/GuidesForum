@@ -73,7 +73,8 @@ async def get_guide(guide_id: int, request: Request):
             cur.execute("UPDATE guides SET views = views + 1 WHERE id = %s", (guide_id,))
             connection.commit()
 
-        cur.execute("SELECT tagname, rating_plus, rating_minus FROM tags WHERE guide = %s", (guide_id,))
+        cur.execute(f"SELECT tagname, rating_plus, rating_minus FROM tags WHERE guide = {guide_id}")
+        print(find_id, cur.fetchall())
         tags = cur.fetchall()
         tags_json = [element[0] for element in tags]
 
@@ -139,13 +140,16 @@ def increase_rating(input_data: dict):
 async def edit_guide(guide_id, request: Request):
     input_data = await request.json()
     with connection.cursor() as cur:
-        cur.execute("")
-        cur.execute(f"UPDATE guides SET title, descr")
-    print(input_data)
+        cur.execute(f"UPDATE guides SET title = '{input_data['title']}', description = '{input_data['text']}'"
+                    f"WHERE id = {guide_id}")
+    connection.commit()
+    return JSONResponse({}, status_code=200)
 
 
 @app.get('/api/get_profile/{user_id}')
 def get_user_profile(user_id):
+    with connection.cursor() as cur:
+        cur.execute(f"SELECT * FROM guides WHERE author ='{user_id}'")
     pass
 
 
@@ -153,19 +157,50 @@ def get_user_profile(user_id):
 def delete_guide(guide_id, request: Request):
     with connection.cursor() as cur:
         cur.execute(f"DELETE FROM guides WHERE id ='{guide_id}'")
+        cur.execute(f"DELETE FROM comments WHERE id ='{guide_id}'")
+        cur.execute(f"DELETE FROM tags WHERE id ='{guide_id}'")
     pass
 
 
-@app.get('/api/random/{guide_id}')
+@app.get('/api/random')
 def random_guide(guide_id):
     pass
 
 
-@app.get('/api/search')
+@app.post('/api/search')
 async def search(request: Request):
     need_find_data = await request.json()
-    ...
-    pass
+    need_find_data = need_find_data['query'].split()
+    sql_query = '''
+    SELECT guides.id, guides.title, tags.tagname, tags.rating_plus, tags.rating_minus
+    FROM guides
+    JOIN tags ON guides.id = tags.guide
+    WHERE LOWER(tags.tagname) = LOWER(%s);
+    '''
+    cur = connection.cursor()
+    output_data = []
+    guides_info = {}
+    for word in need_find_data:
+        cur.execute(sql_query, (word,))
+        result = cur.fetchall()
+        for row in result:
+            guide_id, title, tagname, rating_plus, rating_minus = row
+            if guide_id not in guides_info:
+                guides_info[guide_id] = {}
+            guides_info[guide_id]['title'] = title
+            if 'tags' in guides_info[guide_id].keys():
+                guides_info[guide_id]['tags'].append([tagname, len(rating_plus) - len(rating_minus)])
+            else:
+                guides_info[guide_id]['tags'] = [[tagname, len(rating_plus) - len(rating_minus)]]
+            # print(
+            #     f"Guide ID: {guide_id}, Title: {title}, Tag: {tagname}, Rating Plus: {rating_plus}, Rating Minus: {rating_minus}")
+
+    for guide in guides_info.keys():
+        output_data.append({"id": guide, "title": guides_info[guide]['title'],
+                            "tags": guides_info[guide]['tags']})
+    for i in output_data:
+        print(i)
+    return JSONResponse(output_data, status_code=200)
 
 
 @app.post('/api/send_comment')
