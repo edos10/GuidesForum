@@ -7,30 +7,20 @@ import BASE_URL from "../App.js"
 const MyProfile = () => {
   const [user, setUser] = useState(null);
   const [guides, setGuides] = useState([]);
-
+  const userName = localStorage.getItem("username");
   useEffect(() => {
-
-    const fetchUser = async () => {
-      try {
-        const res = await axios.get(BASE_URL + "/");
-        setUser(res.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
     const fetchGuides = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/user/guides");
+        const res = await axios.post("http://localhost:5000/api/get_user_guides", {userName});
         setGuides(res.data);
       } catch (err) {
         console.log(err);
       }
     };
-
-    fetchUser();
     fetchGuides();
   }, []);
+  const data = {username: localStorage.getItem("username")};
+  setUser(data);
   return (
     <div className="my-profile">
       {user && (

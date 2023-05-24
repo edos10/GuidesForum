@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Navigate, Link } from "react-router-dom";
+import {Navigate, Link, useNavigate} from "react-router-dom";
 import axios from "axios";
 
 import "./Login.scss"
@@ -26,10 +26,11 @@ export default function LoginPage() {
             console.log("Error: ", error);
             alert("Wrong credentials");
         }
-        window.location.reload("/");
     }
-
+    const nav = useNavigate();
     if (redirect) {
+        window.location.reload();
+        nav("/");
         return <Navigate to={"/"} />;
     }
 

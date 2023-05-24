@@ -13,6 +13,7 @@ import "./style.scss"
 import GuidePage from "./pages/GuidePage";
 import EditGuide from "./pages/EditGuide.jsx";
 import MyProfile from "./pages/MyProfile.jsx";  
+import Search from "./pages/Search.jsx";
 
 const BASE_URL = "http://localhost:5000/api";
 
@@ -59,8 +60,12 @@ const router = createBrowserRouter([
         element: <EditGuide />
       },
       {
-        path: "/profile/:username",
+        path: "/my_profile",
         element: <MyProfile />
+      },
+      {
+        path: "/search",
+        element: <Search />
       }
 ]}]);
 

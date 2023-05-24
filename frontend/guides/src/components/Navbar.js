@@ -8,19 +8,12 @@ const Navbar = () => {
     const navigate = useNavigate();
     const [searchText, setSearchText] = useState("");
     const [isAuth, setIsAuth] = useState(false);
+
     function logout() {
         localStorage.removeItem("token", null);
         localStorage.removeItem("username", null);
         console.log("exit");
         window.location.reload();
-    }
-
-    function handleSearch(e) {
-        e.preventDefault();
-        if (searchText.trim() !== "") {
-            navigate(`/search?q=${encodeURIComponent(searchText.trim())}`);
-            setSearchText("");
-        }
     }
 
     useEffect(() => {
@@ -52,15 +45,9 @@ const Navbar = () => {
             <Link to="/" className="navbar-brand">
                 WikiGuides
             </Link>
-            <form className="navbar-search" onSubmit={handleSearch}>
-                <input
-                    type="text"
-                    placeholder="Search"
-                    value={searchText}
-                    onChange={(e) => setSearchText(e.target.value)}
-                />
-            </form>
-            <button type="submit">Search</button>
+            <Link to="/search" className="navbar-link">
+                Поиск по тегам
+            </Link>
             <div className="navbar-links">
                 <div className="navbar-link-container">
                     <Link to="/" className="navbar-link">
@@ -74,6 +61,11 @@ const Navbar = () => {
                 </div>
                 {isAuth ? (
                     <>
+                        <div className="navbar-link-container">
+                            <Link to="/my_profile" className="navbar-link">
+                                Мой профиль
+                            </Link>
+                        </div>
                         <div className="navbar-link-container">
                             <Link to="/create_guide" className="navbar-link">
                                 Создать новый гайд
