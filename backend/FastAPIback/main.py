@@ -7,8 +7,16 @@ import psycopg2
 from config import *
 from change_password import *
 import uvicorn
-from auth import *
+from auth import router_auth
 from check_auth import router_for_check
+
+
+connection = psycopg2.connect(
+    host=DB_HOST,
+    dbname=DB_NAME,
+    user=DB_USER,
+    password=DB_PASS
+)
 
 app = FastAPI()
 app.include_router(router_auth)
@@ -38,10 +46,10 @@ async def new_guide(request: Request):
     input_data = await request.json()
     cur = connection.cursor()
     cur.execute("SELECT id FROM guides")
-    new_id = len(cur.fetchall()) + 1
+    new_id = max([i[0] for i in cur.fetchall()]) + 1
     for tag in input_data['tags']:
         cur.execute("INSERT into tags (tagname, guide, rating_plus, rating_minus) VALUES (%s, %s, %s, %s)", (tag, new_id, [], []))
-    cur.execute("INSERT INTO guides (id, title, description, date, author) VALUES (%s, %s, %s, %s, %s)", 
+    cur.execute("INSERT INTO guides (id, title, description, date, author) VALUES (%s, %s, %s, %s, %s)",
                 (new_id, input_data['title'], input_data['desc'], input_data['date'], input_data['author']))
     connection.commit()
     return JSONResponse(content={"message": "ok"}, status_code=200)
@@ -86,7 +94,7 @@ async def get_guide(guide_id: int, request: Request):
 
         cur.execute(f"SELECT tagname, rating_plus, rating_minus FROM tags WHERE guide = {guide_id}")
         tags = cur.fetchall()
-        tags_json = [element[0] for element in tags]
+        tags_json = [{"name": element[0], "rating": len(element[1]) - len(element[2])} for element in tags]
 
         cur.execute("SELECT text, author FROM comments WHERE guide = %s", (guide_id,))
         comments = cur.fetchall()
@@ -105,7 +113,7 @@ async def get_guide(guide_id: int, request: Request):
 def get_top10_guides():
     output_data = []
     cur = connection.cursor()
-    cur.execute("""SELECT * from guides 
+    cur.execute("""SELECT * from guides
                    order by views desc limit 10""")
     from_db_data = cur.fetchall()
     for element in from_db_data:
@@ -115,30 +123,69 @@ def get_top10_guides():
     return JSONResponse(output_data, status_code=200)
 
 
-@app.options("*")
-def handle_options():
-    response = JSONResponse({}, status_code=200)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control"] = '*'
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
-    return response
-
-
 @app.post('/api/increase_rating')
-def increase_rating(input_data: dict):
-    with connection.cursor() as cur:
-        cur.execute(f"UPDATE tags SET rating = rating + 1 WHERE tagname = '{input_data['tagName']}' AND "
+async def increase_rating(request: Request):
+    input_data = await request.json()
+    cur = connection.cursor()
+    cur.execute(f"SELECT rating_plus FROM tags WHERE tagname = '{input_data['tagName']}' AND "
                     f"guide = {input_data['guideId']}")
+    res = cur.fetchone()
+    new_set = set()
+    for i in res[0]:
+        new_set.add(i)
+    new_set.add(input_data['username'])
+    res = list(new_set)
+    cur.execute(f"SELECT rating_minus FROM tags WHERE tagname = '{input_data['tagName']}' AND "
+                f"guide = {input_data['guideId']}")
+    res_minus = cur.fetchone()
+    new_set_m = set()
+    for i in res_minus[0]:
+        new_set_m.add(i)
+    try:
+        new_set_m.remove(input_data['username'])
+    except KeyError:
+        pass
+    new_set_m = list(new_set_m)
+    cur = connection.cursor()
+    cur.execute(f"UPDATE tags SET rating_minus = %s WHERE tagname = '{input_data['tagName']}' AND "
+                f"guide = {input_data['guideId']}", (new_set_m,))
+    with connection.cursor() as cur:
+        cur.execute(f"UPDATE tags SET rating_plus = %s WHERE tagname = '{input_data['tagName']}' AND "
+                    f"guide = {input_data['guideId']}", (res,))
     connection.commit()
     return JSONResponse({}, status_code=200)
 
 
 @app.post('/api/decrease_rating')
-def increase_rating(input_data: dict):
+async def decrease_rating(request: Request):
+    input_data = await request.json()
+    cur = connection.cursor()
+    cur.execute(f"SELECT rating_minus FROM tags WHERE tagname = '{input_data['tagName']}' AND "
+                f"guide = {input_data['guideId']}")
+    res = cur.fetchone()
+    new_set = set()
+    for i in res[0]:
+        new_set.add(i)
+    new_set.add(input_data['username'])
+    res = list(new_set)
     with connection.cursor() as cur:
-        cur.execute(f"UPDATE tags SET rating = rating - 1 WHERE tagname = '{input_data['tagName']}' AND "
-                    f"guide = {input_data['guideId']}")
+        cur.execute(f"UPDATE tags SET rating_minus = %s WHERE tagname = '{input_data['tagName']}' AND "
+                    f"guide = {input_data['guideId']}", (res,))
+    cur = connection.cursor()
+    cur.execute(f"SELECT rating_plus FROM tags WHERE tagname = '{input_data['tagName']}' AND "
+                f"guide = {input_data['guideId']}")
+    res = cur.fetchone()
+    new_set = set()
+    for i in res[0]:
+        new_set.add(i)
+    try:
+        new_set.remove(input_data['username'])
+    except KeyError:
+        pass
+    res = list(new_set)
+    cur = connection.cursor()
+    cur.execute(f"UPDATE tags SET rating_plus = %s WHERE tagname = '{input_data['tagName']}' AND "
+                f"guide = {input_data['guideId']}", (res,))
     connection.commit()
     return JSONResponse({}, status_code=200)
 
@@ -150,26 +197,20 @@ def increase_rating(input_data: dict):
 async def edit_guide(guide_id, request: Request):
     input_data = await request.json()
     with connection.cursor() as cur:
-        cur.execute(f"UPDATE guides SET title = '{input_data['title']}', description = '{input_data['text']}'"
+        cur.execute(f"UPDATE guides SET title = '{input_data['title']}', description = '{input_data['desc']}'"
                     f"WHERE id = {guide_id}")
     connection.commit()
     return JSONResponse({}, status_code=200)
 
 
-@app.get('/api/get_profile/{user_id}')
-def get_user_profile(user_id):
-    with connection.cursor() as cur:
-        cur.execute(f"SELECT * FROM guides WHERE author ='{user_id}'")
-    pass
-
-
-@app.put('/api/delete_guide/{guide_id}')
-def delete_guide(guide_id, request: Request):
+@app.delete('/api/delete_guide/{guide_id}')
+def delete_guide(guide_id):
     with connection.cursor() as cur:
         cur.execute(f"DELETE FROM guides WHERE id ='{guide_id}'")
-        cur.execute(f"DELETE FROM comments WHERE id ='{guide_id}'")
-        cur.execute(f"DELETE FROM tags WHERE id ='{guide_id}'")
-    pass
+        cur.execute(f"DELETE FROM comments WHERE guide ='{guide_id}'")
+        cur.execute(f"DELETE FROM tags WHERE guide ='{guide_id}'")
+    connection.commit()
+    return JSONResponse({}, status_code=200)
 
 
 @app.get('/api/random')
@@ -204,7 +245,7 @@ async def search(request: Request):
                 guides_info[guide_id]['tags'] = [[tagname, len(rating_plus) - len(rating_minus)]]
             # print(
             #     f"Guide ID: {guide_id}, Title: {title}, Tag: {tagname}, Rating Plus: {rating_plus}, Rating Minus: {rating_minus}")
-
+    print(output_data)
     for guide in guides_info.keys():
         output_data.append({"id": guide, "title": guides_info[guide]['title'],
                             "tags": guides_info[guide]['tags']})

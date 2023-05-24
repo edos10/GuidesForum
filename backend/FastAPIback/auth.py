@@ -2,10 +2,19 @@ import random
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from check_auth import new_user
-from change_password import hash_password, connection, check_password
+from change_password import hash_password, check_password
 from string import ascii_letters, punctuation, digits
+import psycopg2
+from config import *
 
 router_auth = APIRouter()
+
+connection = psycopg2.connect(
+    host=DB_HOST,
+    dbname=DB_NAME,
+    user=DB_USER,
+    password=DB_PASS
+)
 
 bad_auth = 401
 generate_token = list(ascii_letters + punctuation + digits)
