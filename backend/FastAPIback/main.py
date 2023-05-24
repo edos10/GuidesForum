@@ -40,16 +40,27 @@ async def new_guide(request: Request):
     cur.execute("SELECT id FROM guides")
     new_id = len(cur.fetchall()) + 1
     for tag in input_data['tags']:
-        cur.execute("INSERT into tags (tagname, guide) VALUES (%s, %s)", (tag, new_id))
+        cur.execute("INSERT into tags (tagname, guide, rating_plus, rating_minus) VALUES (%s, %s, %s, %s)", (tag, new_id, [], []))
     cur.execute("INSERT INTO guides (id, title, description, date, author) VALUES (%s, %s, %s, %s, %s)", 
                 (new_id, input_data['title'], input_data['desc'], input_data['date'], input_data['author']))
     connection.commit()
     return JSONResponse(content={"message": "ok"}, status_code=200)
 
 
-@app.post('/api/profile/{id_guide}')
-async def profile_user(id_guide: int, request: Request):
-    print(await request.json())
+@app.post('/api/get_user_guides')
+async def profile_user(request: Request):
+    data = await request.json()
+    user = data['userName']
+    cur = connection.cursor()
+    query = f"""
+    SELECT title, id from guides WHERE author = '{user}'
+    """
+    cur.execute(query)
+    res = cur.fetchall()
+    output_json = []
+    for guide in res:
+        output_json.append({"title": guide[0], "id": guide[1]})
+    return JSONResponse(output_json, status_code=200)
 
 
 @app.put("/api/view/{guide_id}")
@@ -74,7 +85,6 @@ async def get_guide(guide_id: int, request: Request):
             connection.commit()
 
         cur.execute(f"SELECT tagname, rating_plus, rating_minus FROM tags WHERE guide = {guide_id}")
-        print(find_id, cur.fetchall())
         tags = cur.fetchall()
         tags_json = [element[0] for element in tags]
 
@@ -198,8 +208,6 @@ async def search(request: Request):
     for guide in guides_info.keys():
         output_data.append({"id": guide, "title": guides_info[guide]['title'],
                             "tags": guides_info[guide]['tags']})
-    for i in output_data:
-        print(i)
     return JSONResponse(output_data, status_code=200)
 
 
