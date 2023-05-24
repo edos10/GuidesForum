@@ -88,8 +88,8 @@ const EditGuide = () => {
                     <div className="tags">
                         {tags.map((tag) => (
                             <div key={tag} className="tag">
-                                {tag}
-                                <button onClick={() => handleRemoveTag(tag)}>x</button>
+                                {tag.name}
+                                <button onClick={() => handleRemoveTag(tag.name)}>x</button>
                             </div>
                         ))}
                     </div>

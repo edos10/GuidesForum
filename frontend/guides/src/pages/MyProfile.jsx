@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./MyProfile.css";
 import BASE_URL from "../App.js"
+import { useNavigate } from "react-router-dom";
 
 
 const MyProfile = () => {
@@ -19,8 +20,21 @@ const MyProfile = () => {
     };
     fetchGuides();
   }, []);
-  const data = {username: localStorage.getItem("username")};
-  setUser(data);
+  const navigate = useNavigate();
+  const handleEditGuide = (guideId) => {
+    navigate(`/edit_guide/${guideId}`);
+  };
+
+  const handleDeleteGuide = async (guideId) => {
+    try {
+      await axios.delete(`http://localhost:5000/api/delete_guide/${guideId}`);
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+
   return (
     <div className="my-profile">
       {user && (
@@ -38,6 +52,10 @@ const MyProfile = () => {
               <a href={`/guide/${guide.id}`} className="guide-link">
                 {guide.title}
               </a>
+              <div className="guide-actions">
+                <button onClick={() => handleEditGuide(guide.id)}>Edit</button>
+                <button onClick={() => handleDeleteGuide(guide.id)}>Delete</button>
+              </div>
             </li>
           ))}
         </ul>

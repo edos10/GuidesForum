@@ -13,6 +13,7 @@ export default function LoginPage() {
         ev.preventDefault();
         try {
             const response = await axios.post("http://localhost:5000/api/auth/login", { username, password });
+            console.log("HHHHHHHUi");
             if (response.status === 200) {
                 localStorage.setItem("token", response.data.token);
                 localStorage.setItem("username", username);
@@ -36,7 +37,7 @@ export default function LoginPage() {
 
     return (
         <div className="auth" onSubmit={login}>
-            <h1>Авторизация</h1>
+            <h1>Вход</h1>
             <form>
                 <input
                     required

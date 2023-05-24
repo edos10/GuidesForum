@@ -3,6 +3,8 @@ import { redirect, useLocation, useNavigate } from 'react-router-dom';
 import "./GuidePage.css";
 import axios from 'axios';
 import moment from "moment";
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+
 
 const GuidePage = () => {
   const location = useLocation();
@@ -57,16 +59,22 @@ const GuidePage = () => {
         <h1 className='guide-title'>{guideData.title}</h1>
         <ul>
           {guideData.tags.map(tag => (
-            <ul className="tag-style" key={tag.name} style={{ color: 'black', backgroundColor: tag.rating >= 0 ? 'green' : 'red', width: 100, borderRadius: 10, padding: 10 }}>
+            <ul className="tag-style" key={tag.name} style={{ color: 'black', width: 100, borderRadius: 10, padding: 10 }}>
               <span>{tag.name} </span>
               <span>{tag.rating}</span>
-              <button onClick={() => increaseRating(tag.name)}>+</button>
-              <button onClick={() => decreaseRating(tag.name)}>-</button>
+              <ul>
+  {localStorage.getItem("token") ? (
+    <>
+      <button onClick={() => increaseRating(tag.name)}>+</button>
+      <button onClick={() => decreaseRating(tag.name)}>-</button>
+    </>
+  ) : null}
+</ul>
             </ul>
           ))}
         </ul>
-        {guideData.text}
-        <p className='release-date'>Время выхода гайда: {new Date(guideData.releaseDate).toLocaleString()}</p>
+        <p className='release-date'>Время выхода гайда: {guideData.releaseDate}</p>
+        <ReactMarkdown>{guideData.text}</ReactMarkdown>
         <button onClick={seeComments} className='buttons'><h1>Комментарии</h1></button>
         {commentsVisible && (
           <div className='comments-wrapper'>

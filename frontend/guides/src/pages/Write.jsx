@@ -5,6 +5,7 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
 import "./GuideCreate.scss";
+import ReactMarkdown from "react-markdown";
 
 const GuideForm = () => {
     const state = useLocation().state;
@@ -49,12 +50,14 @@ const GuideForm = () => {
                     onChange={(e) => setTitle(e.target.value)}
                 />
                 <div className="editorContainer" style={{ wordWrap: 'break-word' }}>
-                    <ReactQuill
-                        className="editor"
-                        theme="snow"
-                        value={value}
-                        onChange={setValue}
-                    />
+                <textarea
+                    className="editor"
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                />
+                <div className="preview">
+                    <ReactMarkdown source={value} />
+                </div>
                 </div>
             </div>
             <div className="menu">
