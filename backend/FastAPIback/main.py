@@ -7,16 +7,9 @@ import psycopg2
 from config import *
 from change_password import *
 import uvicorn
-from auth import router_auth
+from auth import router_auth, connection_start
 from check_auth import router_for_check
 
-
-connection = psycopg2.connect(
-    host=DB_HOST,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASS
-)
 
 app = FastAPI()
 app.include_router(router_auth)
@@ -43,6 +36,7 @@ def handle_options():
 
 @app.post('/api/new_post')
 async def new_guide(request: Request):
+    connection = connection_start()
     input_data = await request.json()
     cur = connection.cursor()
     cur.execute("SELECT id FROM guides")
@@ -52,6 +46,7 @@ async def new_guide(request: Request):
     cur.execute("INSERT INTO guides (id, title, description, date, author) VALUES (%s, %s, %s, %s, %s)",
                 (new_id, input_data['title'], input_data['desc'], input_data['date'], input_data['author']))
     connection.commit()
+    connection.close()
     return JSONResponse(content={"message": "ok"}, status_code=200)
 
 
@@ -59,6 +54,7 @@ async def new_guide(request: Request):
 async def profile_user(request: Request):
     data = await request.json()
     user = data['userName']
+    connection = connection_start()
     cur = connection.cursor()
     query = f"""
     SELECT title, id from guides WHERE author = '{user}'
@@ -68,20 +64,24 @@ async def profile_user(request: Request):
     output_json = []
     for guide in res:
         output_json.append({"title": guide[0], "id": guide[1]})
+    connection.close()
     return JSONResponse(output_json, status_code=200)
 
 
 @app.put("/api/view/{guide_id}")
 def to_up_views(guide_id: int):
+    connection = connection_start()
     with connection.cursor() as cur:
         cur.execute(f"UPDATE guides SET views = views + 1 WHERE id = {guide_id}")
     connection.commit()
+    connection.close()
     return JSONResponse({}, status_code=200)
 
 
 @app.get('/api/get_guide/{guide_id}')
 @app.put('/api/get_guide/{guide_id}')
 async def get_guide(guide_id: int, request: Request):
+    connection = connection_start()
     with connection.cursor() as cur:
         cur.execute("SELECT * FROM guides WHERE id = %s", (guide_id,))
         find_id = cur.fetchone()
@@ -99,6 +99,7 @@ async def get_guide(guide_id: int, request: Request):
         cur.execute("SELECT text, author FROM comments WHERE guide = %s", (guide_id,))
         comments = cur.fetchall()
         comments_json = [{"text": element[0], "author": element[1]} for element in comments]
+    connection.close()
     return JSONResponse({
         "title": find_id[TITLE],
         "tags": tags_json,
@@ -112,6 +113,7 @@ async def get_guide(guide_id: int, request: Request):
 @app.get('/api/get_top10')
 def get_top10_guides():
     output_data = []
+    connection = connection_start()
     cur = connection.cursor()
     cur.execute("""SELECT * from guides
                    order by views desc limit 10""")
@@ -120,12 +122,14 @@ def get_top10_guides():
         output_data.append(
             {"title": element[TITLE], "releaseDate": element[DATE], "text": element[DESCRIPTION],
              "views": element[VIEWS], "author": element[AUTHOR], "id": element[ID]})
+    connection.close()
     return JSONResponse(output_data, status_code=200)
 
 
 @app.post('/api/increase_rating')
 async def increase_rating(request: Request):
     input_data = await request.json()
+    connection = connection_start()
     cur = connection.cursor()
     cur.execute(f"SELECT rating_plus FROM tags WHERE tagname = '{input_data['tagName']}' AND "
                     f"guide = {input_data['guideId']}")
@@ -153,12 +157,14 @@ async def increase_rating(request: Request):
         cur.execute(f"UPDATE tags SET rating_plus = %s WHERE tagname = '{input_data['tagName']}' AND "
                     f"guide = {input_data['guideId']}", (res,))
     connection.commit()
+    connection.close()
     return JSONResponse({}, status_code=200)
 
 
 @app.post('/api/decrease_rating')
 async def decrease_rating(request: Request):
     input_data = await request.json()
+    connection = connection_start()
     cur = connection.cursor()
     cur.execute(f"SELECT rating_minus FROM tags WHERE tagname = '{input_data['tagName']}' AND "
                 f"guide = {input_data['guideId']}")
@@ -187,6 +193,7 @@ async def decrease_rating(request: Request):
     cur.execute(f"UPDATE tags SET rating_plus = %s WHERE tagname = '{input_data['tagName']}' AND "
                 f"guide = {input_data['guideId']}", (res,))
     connection.commit()
+    connection.close()
     return JSONResponse({}, status_code=200)
 
 
@@ -196,20 +203,24 @@ async def decrease_rating(request: Request):
 @app.post('/api/edit_guide/{guide_id}')
 async def edit_guide(guide_id, request: Request):
     input_data = await request.json()
+    connection = connection_start()
     with connection.cursor() as cur:
         cur.execute(f"UPDATE guides SET title = '{input_data['title']}', description = '{input_data['desc']}'"
                     f"WHERE id = {guide_id}")
     connection.commit()
+    connection.close()
     return JSONResponse({}, status_code=200)
 
 
 @app.delete('/api/delete_guide/{guide_id}')
 def delete_guide(guide_id):
+    connection = connection_start()
     with connection.cursor() as cur:
         cur.execute(f"DELETE FROM guides WHERE id ='{guide_id}'")
         cur.execute(f"DELETE FROM comments WHERE guide ='{guide_id}'")
         cur.execute(f"DELETE FROM tags WHERE guide ='{guide_id}'")
     connection.commit()
+    connection.close()
     return JSONResponse({}, status_code=200)
 
 
@@ -228,6 +239,7 @@ async def search(request: Request):
     JOIN tags ON guides.id = tags.guide
     WHERE LOWER(tags.tagname) = LOWER(%s);
     '''
+    connection = connection_start()
     cur = connection.cursor()
     output_data = []
     guides_info = {}
@@ -249,16 +261,19 @@ async def search(request: Request):
     for guide in guides_info.keys():
         output_data.append({"id": guide, "title": guides_info[guide]['title'],
                             "tags": guides_info[guide]['tags']})
+    connection.close()
     return JSONResponse(output_data, status_code=200)
 
 
 @app.post('/api/send_comment')
 async def send_comment(request: Request):
+    connection = connection_start()
     data = await request.json()
     with connection.cursor() as cur:
         cur.execute(f"INSERT into comments (text, author, date, guide) VALUES (%s, %s, %s, %s)",
                     (data['commentText'], data['author'], data['date'], data['guideId']))
     connection.commit()
+    connection.close()
     print(data)
 
 

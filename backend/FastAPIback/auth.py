@@ -9,12 +9,14 @@ from config import *
 
 router_auth = APIRouter()
 
-connection = psycopg2.connect(
-    host=DB_HOST,
-    dbname=DB_NAME,
-    user=DB_USER,
-    password=DB_PASS
-)
+def connection_start():
+    connection = psycopg2.connect(
+        host=DB_HOST,
+        dbname=DB_NAME,
+        user=DB_USER,
+        password=DB_PASS
+    )
+    return connection
 
 bad_auth = 401
 generate_token = list(ascii_letters + punctuation + digits)
@@ -25,6 +27,7 @@ len_token = 40
 
 @router_auth.post('/api/auth/register')
 async def register_user(request: Request):
+    connection = connection_start()
     cur = connection.cursor()
     data = await request.json()
     cur.execute(f"SELECT * FROM users WHERE username = '{data['username']}'")
@@ -39,6 +42,7 @@ async def register_user(request: Request):
     cur.execute("INSERT INTO users (username, hashsalt, email) VALUES (%s, %s, %s)",
                 (data['username'], bytes_password, data['email']))
     connection.commit()
+    connection.close()
     token = "".join([random.choice(generate_token) for _ in range(len_token)])
     new_user(token, data['username'])
     return JSONResponse(content={"token": token}, status_code=200)
@@ -47,6 +51,7 @@ async def register_user(request: Request):
 @router_auth.post('/api/auth/login')
 async def login_user(request: Request):
     input_data = await request.json()
+    connection = connection_start()
     cur = connection.cursor()
     cur.execute(f"SELECT username, hashsalt FROM users where username = '{input_data['username']}'")
     find_user = cur.fetchone()
@@ -57,4 +62,5 @@ async def login_user(request: Request):
         return JSONResponse(content={"message": "Неверный пароль, введите еще раз!"}, status_code=bad_auth)
     token = "".join([random.choice(generate_token) for _ in range(len_token)])
     new_user(token, input_data['username'])
+    connection.close()
     return JSONResponse(content={"token": token}, status_code=200)
