@@ -8,6 +8,7 @@
 1) cd backend
 2) cd FastAPIback
 3) python main.py
+
 Клиент:
 1) cd frontend
 2) cd guides
