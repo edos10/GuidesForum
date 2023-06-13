@@ -1,6 +1,6 @@
 # GuidesForum
 
-Это веб-приложение на JavaScript + Python 3 с использованием фреймворков FastAPI и ReactJS, а также РСУБД PostgreSQL и in-memory key-value хранилищем данных Redis.
+Это веб-приложение, форум для гайдов, сделано на JavaScript + Python 3 с использованием фреймворков FastAPI и ReactJS, а также РСУБД PostgreSQL и in-memory key-value хранилищем данных Redis.
 
 Приложение надо запускать так:
 
